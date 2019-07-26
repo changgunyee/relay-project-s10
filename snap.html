@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <!-- user style -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="header-area nav-bar-fade" id="header">
+    <h1>이리오너라</h1>
+</header>
+<section>
+    <video id="player" controls autoplay></video>
+    <button id="capture">Capture</button>
+    <button id="stop">Stop</button>
+    <canvas id="snapshot" width=640 height=480 hidden></canvas>
+    <img src="samples/multiposes1.jpg" alt="pose">
+</section>
+<footer class="footer-area">
+    <div class="info">
+        <p>Copyright 2019. BoostCamper. All right reserved.</p>
+    </div>
+</footer>
+
+<!-- Load TensorFlow.js -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<!-- Load Posenet -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+<script>
+    window.onload = async function () {
+        const url = new URL(window.location.href);
+        console.log(url.searchParams.get("teamNumber"));
+
+        // 노트북 카메라 프리뷰
+        const player = document.getElementById('player');
+        // 스냅샷
+        const snapshotCanvas = document.getElementById('snapshot');
+        // 촬영 및 종료 버튼
+        const captureButton = document.getElementById('capture');
+        const stopButton = document.getElementById('stop');
+        // 비디오 트랙
+        let videoTracks;
+
+        function saveText(text, filename) {
+            const tmp = document.createElement('a');
+            tmp.setAttribute('href', 'data:text/plain;charset=utf-u,' + encodeURIComponent(text));
+            tmp.setAttribute('download', filename);
+            tmp.click();
+        }
+
+        // 촬영시 스냅샷을 저장
+        captureButton.addEventListener('click', async function () {
+            // Draw the video frame to the canvas.
+            snapshot.getContext('2d').drawImage(player, 0, 0, snapshotCanvas.width, snapshotCanvas.height);
+
+            try {
+                // posenet 준비
+                const net = await posenet.load();
+
+                // 다수 포즈 측정
+                const poses = await net.estimateMultiplePoses(snapshotCanvas, {
+                    flipHorizontal: false,
+                    maxDetections: 5,
+                    scoreThreshold: 0.5,
+                    nmsRadius: 20
+                });
+
+                // 포즈 측정 결과 출력
+                console.log(poses);
+
+                // 저장
+                saveText(JSON.stringify(poses), 'test.json');
+            } catch (err) {
+                console.log(err);
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            // Stop all video streams.
+            videoTracks.forEach(function (track) {
+                track.stop();
+            })
+        });
+
+        // 카메라 권한 요청
+        navigator.mediaDevices.getUserMedia({video: true})
+            .then((stream) => {
+                player.srcObject = stream;
+                videoTracks = stream.getVideoTracks();
+            });
+    };
+</script>
+</body>
+</html>
