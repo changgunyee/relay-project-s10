@@ -76,7 +76,7 @@
                 // saveText(JSON.stringify(poses), 'test.json');
 
                 axios.post('http://localhost:3000/',poses).then((response)=>{
-                    console.log(response,response.data);
+                    console.log(response.data);
                 });
             } catch (err) {
                 console.log(err);
