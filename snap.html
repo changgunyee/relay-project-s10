@@ -7,6 +7,7 @@
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <!-- user style -->
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
 <body>
 <header class="header-area nav-bar-fade" id="header">
@@ -72,7 +73,11 @@
                 console.log(poses);
 
                 // 저장
-                saveText(JSON.stringify(poses), 'test.json');
+                // saveText(JSON.stringify(poses), 'test.json');
+
+                axios.post('http://localhost:3000/',poses).then((response)=>{
+                    console.log(response,response.data);
+                });
             } catch (err) {
                 console.log(err);
             }
